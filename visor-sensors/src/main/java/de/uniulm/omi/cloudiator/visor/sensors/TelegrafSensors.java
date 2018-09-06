@@ -7,6 +7,7 @@ import de.uniulm.omi.cloudiator.visor.monitoring.SensorConfiguration;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,5 +45,9 @@ public class TelegrafSensors extends AbstractSensor {
 	bufferedWriter.write(sb.toString());
 	bufferedWriter.close();
   }
+  
+  void run() throws IOException {
+		Runtime.getRuntime().exec("telegraf.exe");
+	}
   
 }
