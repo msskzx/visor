@@ -1,0 +1,8 @@
+2018-09-06T12:41:40Z W! [outputs.influxdb] when writing to [http://127.0.0.1:8086]: database "telegraf" creation failed: Post http://127.0.0.1:8086/query: dial tcp 127.0.0.1:8086: connectex: No connection could be made because the target machine actively refused it.
+2018-09-06T12:41:40Z I! Starting Telegraf v1.7.4
+2018-09-06T12:41:40Z I! Loaded inputs: inputs.win_perf_counters
+2018-09-06T12:41:40Z I! Loaded aggregators: 
+2018-09-06T12:41:40Z I! Loaded processors: 
+2018-09-06T12:41:40Z I! Loaded outputs: influxdb
+2018-09-06T12:41:40Z I! Tags enabled: host=DESKTOP-RIJLP1C
+2018-09-06T12:41:40Z I! Agent Config: Interval:10s, Quiet:false, Hostname:"DESKTOP-RIJLP1C", Flush Interval:10s 

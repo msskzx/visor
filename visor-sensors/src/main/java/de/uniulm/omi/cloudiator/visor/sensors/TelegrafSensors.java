@@ -61,14 +61,24 @@ public class TelegrafSensors extends AbstractSensor {
 	}
 
 	void run() throws IOException {
-		Runtime.getRuntime().exec("telegraf.exe");
+		Runtime.getRuntime().exec("\".\\Telegraf\\telegraf.exe\" --config \".\\Telegraf\\telegraf.conf\"");
 	}
 
-	void addHTTPPlugin() throws IOException {
-		String parameters = "url = \"http://localhost/monitors\"\n";
+	void addHTTPPlugin(String HTTPParameters) throws IOException {
+		StringBuilder parameters = new StringBuilder(HTTPParameters);
 		Map<String, String> sensorConfiguration = new HashMap<>();
-		sensorConfiguration.put("http", parameters);
 
+		if(HTTPParameters.equals("")) {
+			parameters.append("url = \"http://localhost:31415/monitors/uuid\"\n");
+			parameters.append("timeout = \"5s\"\n");
+			parameters.append("method = \"POST\"\n");
+			parameters.append("timeout = \"5s\"\n");
+			parameters.append("data_format = \"json\"\n");
+		}
+
+		sensorConfiguration.put("http", parameters.toString());	
+		sensorConfiguration.put("http.headers", "Content-Type = \"text/plain; charset=utf-8\"");
+		
 		addPlugin("outputs", sensorConfiguration);
 	}
 
@@ -92,10 +102,21 @@ public class TelegrafSensors extends AbstractSensor {
 		bufferedWriter.close();
 	}
 
-	void createConfig() throws IOException {
-		String global_tags = "";
-		String agent = "interval = \"10s\",round_interval = true,flush_buffer_when_full = true,collection_jitter = \"0s\",flush_interval = \"10s\",flush_jitter = \"0s\",debug = false,quiet = false,logfile = \"Telegraf/telegraf.log\",hostname = \"\"";
-		setConfigSettings(global_tags, agent);
+	void createConfig(String global_tags, String agentParameters) throws IOException {
+		StringBuilder agent = new StringBuilder(agentParameters);
+		if (agentParameters.toString().equals("")) {
+			agent.append("interval = \"10s\"");
+			agent.append(",round_interval = true\n");
+			agent.append(",metric_buffer_limit = 1000\n");
+			agent.append(",flush_buffer_when_full = true\n");
+			agent.append(",collection_jitter = \"0s\"\n");
+			agent.append(",flush_interval = \"10s\"\n");
+			agent.append(",flush_jitter = \"0s\"\n");
+			agent.append(",debug = false\n");
+			agent.append(",quiet = false\n");
+			agent.append(",logfile = \"Telegraf/telegraf.log\",hostname = \"\"\n");
+		}
+		setConfigSettings(global_tags, agent.toString());
 	}
 
 }
