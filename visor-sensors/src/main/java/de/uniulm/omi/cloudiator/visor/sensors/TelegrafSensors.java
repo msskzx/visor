@@ -17,22 +17,42 @@ import java.util.Map.Entry;
 public class TelegrafSensors extends AbstractSensor {
 
 	String betweenParametersSeparator = ",";
-	String fileName = "Telegraf/telegraf.conf";
+	String fileName = "./Telegraf/telegraf.conf";
 
 	@Override
 	protected void initialize(MonitorContext monitorContext, SensorConfiguration sensorConfiguration)
 			throws SensorInitializationException {
 		super.initialize(monitorContext, sensorConfiguration);
+		try {
+			createConfig("", "");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			addPlugins("input", sensorConfiguration.getConfiguration());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			addHTTPPlugin("");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			run();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/*
 	 * read the config file and add the required inputs or outputs plugins
-	 * 
+	 *
 	 * sensorType: "inputs" / "outputs"
-	 * 
+	 *
 	 * sensorConfiguration: <"cpu", "totalcpu = true,percpu = true">
 	 */
-	void addPlugin(String sensorType, Map<String, String> sensorConfiguration) throws IOException {
+	void addPlugins(String sensorType, Map<String, String> sensorConfiguration) throws IOException {
 
 		BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
 		StringBuilder stringBuilder = new StringBuilder("");
@@ -76,10 +96,10 @@ public class TelegrafSensors extends AbstractSensor {
 			parameters.append("data_format = \"json\"\n");
 		}
 
-		sensorConfiguration.put("http", parameters.toString());	
+		sensorConfiguration.put("http", parameters.toString());
 		sensorConfiguration.put("http.headers", "Content-Type = \"text/plain; charset=utf-8\"");
-		
-		addPlugin("outputs", sensorConfiguration);
+
+		addPlugins("outputs", sensorConfiguration);
 	}
 
 	void setConfigSettings(String global_tags, String agent) throws IOException {
@@ -117,6 +137,11 @@ public class TelegrafSensors extends AbstractSensor {
 			agent.append(",logfile = \"Telegraf/telegraf.log\",hostname = \"\"\n");
 		}
 		setConfigSettings(global_tags, agent.toString());
+	}
+
+	public static void main(String[] args) throws SensorInitializationException {
+		TelegrafSensors tel = new TelegrafSensors();
+		tel.initialize(null, null);
 	}
 
 }
