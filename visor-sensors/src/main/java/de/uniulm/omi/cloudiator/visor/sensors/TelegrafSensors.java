@@ -28,6 +28,7 @@ public class TelegrafSensors extends AbstractSensor implements Runnable{
 	public TelegrafSensors(String sensorType, SensorConfiguration sensorConfiguration) {
 		this.sensorType = sensorType;
 		this.sensorConfiguration = sensorConfiguration.getConfiguration();
+		// run();
 	}
 
 	@Override
@@ -39,12 +40,14 @@ public class TelegrafSensors extends AbstractSensor implements Runnable{
 		this.sensorConfiguration = sensorConfiguration.getConfiguration();
 	}
 
-	/*
+	/**
 	 * read the config file and add the required inputs or outputs plugins
 	 *
 	 * sensorType: "inputs" / "outputs"
 	 *
 	 * sensorConfiguration: <"plugin:cpu", "parameters:totalcpu = true,percpu = true">
+	 *
+	 * @throws IOException
 	 */
 	synchronized void addPlugin() throws IOException {
 
@@ -74,6 +77,9 @@ public class TelegrafSensors extends AbstractSensor implements Runnable{
 		bufferedWriter.close();
 	}
 
+	/**
+	 * called to add a plugin to the config file
+	 */
 	@Override
 	public void run() {
 		try {

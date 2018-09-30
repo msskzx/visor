@@ -8,16 +8,41 @@ import de.uniulm.omi.cloudiator.visor.monitoring.SensorConfiguration;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 public class TelegrafSensorsInit {
 
 	static String betweenParametersSeparator = ",";
 	static String fileName = "Telegraf/telegraf.conf";
+	static Map<String, Boolean> runningSensors;
+	static int PORT = 9000;
 
 	static void initServer() throws IOException {
 
+	}
+
+	/**
+	 * creates the config file and adds some global settings to it
+ 	 *
+	 * @param String global_tags
+	 * @param String agentParameters
+	 * @throws IOException
+	 */
+	static void createConfig(String global_tags, String agentParameters) throws IOException {
+		StringBuilder agent = new StringBuilder(agentParameters);
+		if (agentParameters.equals("")) {
+			agent.append("interval = \"10s\"");
+			agent.append(",round_interval = true\n");
+			agent.append(",metric_buffer_limit = 1000\n");
+			agent.append(",flush_buffer_when_full = true\n");
+			agent.append(",collection_jitter = \"0s\"\n");
+			agent.append(",flush_interval = \"10s\"\n");
+			agent.append(",flush_jitter = \"0s\"\n");
+			agent.append(",debug = false\n");
+			agent.append(",quiet = false\n");
+			agent.append(",logfile = \"Telegraf/telegraf.log\",hostname = \"\"\n");
+		}
+		setConfigSettings(global_tags, agent.toString());
 	}
 
 	static void setConfigSettings(String global_tags, String agent) throws IOException {
@@ -45,23 +70,12 @@ public class TelegrafSensorsInit {
 		bufferedWriter.close();
 	}
 
-	static void createConfig(String global_tags, String agentParameters) throws IOException {
-		StringBuilder agent = new StringBuilder(agentParameters);
-		if (agentParameters.equals("")) {
-			agent.append("interval = \"10s\"");
-			agent.append(",round_interval = true\n");
-			agent.append(",metric_buffer_limit = 1000\n");
-			agent.append(",flush_buffer_when_full = true\n");
-			agent.append(",collection_jitter = \"0s\"\n");
-			agent.append(",flush_interval = \"10s\"\n");
-			agent.append(",flush_jitter = \"0s\"\n");
-			agent.append(",debug = false\n");
-			agent.append(",quiet = false\n");
-			agent.append(",logfile = \"Telegraf/telegraf.log\",hostname = \"\"\n");
-		}
-		setConfigSettings(global_tags, agent.toString());
-	}
-
+	/**
+	 * HTTP plugin responsible for sending the output metrics
+	 *
+	 * @param String HTTPParameters
+	 * @return
+	 */
 	static String addHTTPPlugin(String HTTPParameters) {
 		StringBuilder parameters = new StringBuilder(HTTPParameters);
 
@@ -76,20 +90,27 @@ public class TelegrafSensorsInit {
 		return parameters.toString();
 	}
 
+	/**
+	 * run the telegraf sensors using this specific config file
+	 *
+	 * @throws IOException
+	 */
 	static void run() throws IOException {
 		Runtime.getRuntime().exec("\".\\Telegraf\\telegraf.exe\" --config \".\\Telegraf\\telegraf.conf\"");
 	}
 
-	public static void main(String[] args) throws IOException {
-		createConfig("", "");
-		addHTTPPlugin("");
-
-		TelegrafSensors tel = new TelegrafSensors();
-		Map<String, String> map = new HashMap<>();
-		map.put("cpu", "totalcpu = true,percpu = true");
-
-		tel.addPlugin("inputs", map);
-//		run();
+	/**
+	 * check if the sensor the user wants to run, is already running
+	 *
+	 * if not add it to the list of running sensors
+	 * @param String sensor
+	 * @return boolean
+	 */
+	boolean alreadyRunningSensor(String sensor) {
+		if(runningSensors.containsKey(sensor))
+			return true;
+		runningSensors.put(sensor, true);
+		return false;
 	}
 
 }
