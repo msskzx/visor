@@ -10,25 +10,33 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
-public class TelegrafSensors extends AbstractSensor {
+public class TelegrafSensors extends AbstractSensor implements Runnable{
 
 	String betweenParametersSeparator = ",";
 	String fileName = "./Telegraf/telegraf.conf";
+
+	Thread thread;
+	String threadName;
+
+	String sensorType;
+	Map<String, String> sensorConfiguration;
+
+	public TelegrafSensors(String sensorType, SensorConfiguration sensorConfiguration) {
+		this.sensorType = sensorType;
+		this.sensorConfiguration = sensorConfiguration.getConfiguration();
+	}
 
 	@Override
 	protected void initialize(MonitorContext monitorContext, SensorConfiguration sensorConfiguration)
 			throws SensorInitializationException {
 		super.initialize(monitorContext, sensorConfiguration);
 
-		try {
-			addPlugins("input", sensorConfiguration.getConfiguration());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		this.sensorType = sensorType;
+		this.sensorConfiguration = sensorConfiguration.getConfiguration();
 	}
 
 	/*
@@ -36,9 +44,9 @@ public class TelegrafSensors extends AbstractSensor {
 	 *
 	 * sensorType: "inputs" / "outputs"
 	 *
-	 * sensorConfiguration: <"cpu", "totalcpu = true,percpu = true">
+	 * sensorConfiguration: <"plugin:cpu", "parameters:totalcpu = true,percpu = true">
 	 */
-	void addPlugins(String sensorType, Map<String, String> sensorConfiguration) throws IOException {
+	synchronized void addPlugin() throws IOException {
 
 		BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
 		StringBuilder stringBuilder = new StringBuilder("");
@@ -64,6 +72,21 @@ public class TelegrafSensors extends AbstractSensor {
 		bufferedWriter.write(stringBuilder.toString());
 
 		bufferedWriter.close();
+	}
+
+	@Override
+	public void run() {
+		try {
+			addPlugin();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void start() {
+		threadName = "thread"+ new Random().nextInt(100000);
+		thread = new Thread(this, threadName);
+		thread.start();
 	}
 
 }
