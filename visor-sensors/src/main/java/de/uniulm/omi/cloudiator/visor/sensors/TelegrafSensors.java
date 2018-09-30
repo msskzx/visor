@@ -23,23 +23,9 @@ public class TelegrafSensors extends AbstractSensor {
 	protected void initialize(MonitorContext monitorContext, SensorConfiguration sensorConfiguration)
 			throws SensorInitializationException {
 		super.initialize(monitorContext, sensorConfiguration);
-		try {
-			createConfig("", "");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
 		try {
 			addPlugins("input", sensorConfiguration.getConfiguration());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		try {
-			addHTTPPlugin("");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		try {
-			run();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -78,70 +64,6 @@ public class TelegrafSensors extends AbstractSensor {
 		bufferedWriter.write(stringBuilder.toString());
 
 		bufferedWriter.close();
-	}
-
-	void run() throws IOException {
-		Runtime.getRuntime().exec("\".\\Telegraf\\telegraf.exe\" --config \".\\Telegraf\\telegraf.conf\"");
-	}
-
-	void addHTTPPlugin(String HTTPParameters) throws IOException {
-		StringBuilder parameters = new StringBuilder(HTTPParameters);
-		Map<String, String> sensorConfiguration = new HashMap<>();
-
-		if(HTTPParameters.equals("")) {
-			parameters.append("url = \"http://localhost:31415/monitors/uuid\"\n");
-			parameters.append("timeout = \"5s\"\n");
-			parameters.append("method = \"POST\"\n");
-			parameters.append("timeout = \"5s\"\n");
-			parameters.append("data_format = \"json\"\n");
-		}
-
-		sensorConfiguration.put("http", parameters.toString());
-		sensorConfiguration.put("http.headers", "Content-Type = \"text/plain; charset=utf-8\"");
-
-		addPlugins("outputs", sensorConfiguration);
-	}
-
-	void setConfigSettings(String global_tags, String agent) throws IOException {
-		BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(fileName));
-		StringBuilder stringBuilder = new StringBuilder("");
-
-		stringBuilder.append("[global_tags]\n");
-		String[] global_tagsParameters = global_tags.split(betweenParametersSeparator);
-		for (int i = 0; i < global_tagsParameters.length; i++)
-			stringBuilder.append("  " + global_tagsParameters[i] + "\n");
-		stringBuilder.append("\n");
-
-		stringBuilder.append("[agent]\n");
-		String[] agentParameters = agent.split(betweenParametersSeparator);
-		for (int i = 0; i < agentParameters.length; i++)
-			stringBuilder.append("  " + agentParameters[i] + "\n");
-		stringBuilder.append("\n");
-
-		bufferedWriter.write(stringBuilder.toString());
-		bufferedWriter.close();
-	}
-
-	void createConfig(String global_tags, String agentParameters) throws IOException {
-		StringBuilder agent = new StringBuilder(agentParameters);
-		if (agentParameters.toString().equals("")) {
-			agent.append("interval = \"10s\"");
-			agent.append(",round_interval = true\n");
-			agent.append(",metric_buffer_limit = 1000\n");
-			agent.append(",flush_buffer_when_full = true\n");
-			agent.append(",collection_jitter = \"0s\"\n");
-			agent.append(",flush_interval = \"10s\"\n");
-			agent.append(",flush_jitter = \"0s\"\n");
-			agent.append(",debug = false\n");
-			agent.append(",quiet = false\n");
-			agent.append(",logfile = \"Telegraf/telegraf.log\",hostname = \"\"\n");
-		}
-		setConfigSettings(global_tags, agent.toString());
-	}
-
-	public static void main(String[] args) throws SensorInitializationException {
-		TelegrafSensors tel = new TelegrafSensors();
-		tel.initialize(null, null);
 	}
 
 }
