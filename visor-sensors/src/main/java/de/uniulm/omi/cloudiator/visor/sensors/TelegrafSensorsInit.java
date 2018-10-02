@@ -4,10 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
@@ -16,7 +13,7 @@ public class TelegrafSensorsInit {
 
     static String betweenParametersSeparator = ",";
     static String fileName = "Telegraf/telegraf.conf";
-    static Map<String, Boolean> runningSensors;
+    static Map<String, String> runningSensors;
     static int PORT = 9000;
     static String route = "/monitors";
     static String url = "http://localhost:" + PORT + route;
@@ -123,7 +120,7 @@ public class TelegrafSensorsInit {
     boolean alreadyRunningSensor(String sensor) {
         if (runningSensors.containsKey(sensor))
             return true;
-        runningSensors.put(sensor, true);
+        runningSensors.put(sensor, "");
         return false;
     }
 
@@ -132,12 +129,25 @@ public class TelegrafSensorsInit {
 
 
         /**
-         * @param exchange
+         * @param httpExchange
          * @throws IOException
          */
-        public void handle(HttpExchange exchange) throws IOException {
-            exchange.sendResponseHeaders(200, 0);
-            OutputStream responseBody = exchange.getResponseBody();
+        public void handle(HttpExchange httpExchange) throws IOException {
+            httpExchange.sendResponseHeaders(200, 0);
+            InputStreamReader requestBody = new InputStreamReader(httpExchange.getRequestBody(), "utf-8");
+            BufferedReader br = new BufferedReader(requestBody);
+
+            String cur;
+            StringBuilder metrics = new StringBuilder("");
+            while ((cur = br.readLine()) != null) {
+                metrics.append(cur + "\n");
+            }
+
+            // to get the metric name from the request
+            String sensorName = metrics.toString().split(",")[1].split(":")[1];
+            runningSensors.put(sensorName, metrics.toString());
+
+            httpExchange.getRequestBody().close();
         }
     }
 }
