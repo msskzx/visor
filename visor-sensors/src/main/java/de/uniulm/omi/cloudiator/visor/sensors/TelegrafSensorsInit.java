@@ -3,6 +3,7 @@ package de.uniulm.omi.cloudiator.visor.sensors;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import de.uniulm.omi.cloudiator.visor.monitoring.SensorConfiguration;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -19,6 +20,10 @@ public class TelegrafSensorsInit {
     static String url = "http://localhost:" + PORT + route;
 
 
+    /**
+     * used to initialize the server which is used to receive the metrics
+     * @throws IOException
+     */
     static void initServer() throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
         server.createContext(route, new TelegrafHTTPHandler());
@@ -119,6 +124,15 @@ public class TelegrafSensorsInit {
      */
     static boolean alreadyRunningSensor(String sensor) {
         return runningSensors.containsKey(sensor);
+    }
+
+    /**
+     * used to add a plugin to the config file
+     * @param sensorConfiguration
+     */
+    static void addSensor(SensorConfiguration sensorConfiguration) {
+        TelegrafSensor telegrafSensor = new TelegrafSensor("Inputs", sensorConfiguration);
+        runningSensors.put(telegrafSensor.getSensorName(), telegrafSensor);
     }
 
 

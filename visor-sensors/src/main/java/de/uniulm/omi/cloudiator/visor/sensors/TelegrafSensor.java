@@ -29,11 +29,12 @@ public class TelegrafSensor extends AbstractSensor implements Runnable{
 	String sensorType;
 	Map<String, String> sensorConfiguration;
 	String sensorMetrics;
+	String sensorName;
 
 	public TelegrafSensor(String sensorType, SensorConfiguration sensorConfiguration) {
 		this.sensorType = sensorType;
 		this.sensorConfiguration = sensorConfiguration.getConfiguration();
-		// run();
+		run();
 	}
 
 	@Override
@@ -43,6 +44,7 @@ public class TelegrafSensor extends AbstractSensor implements Runnable{
 
 		this.sensorType = sensorType;
 		this.sensorConfiguration = sensorConfiguration.getConfiguration();
+		// run();
 	}
 
 	/**
@@ -68,7 +70,8 @@ public class TelegrafSensor extends AbstractSensor implements Runnable{
 		BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(fileName));
 
 		for (Entry<String, String> entry : sensorConfiguration.entrySet()) {
-			stringBuilder.append("[[" + sensorType + ":" + entry.getKey() + "]]\n");
+			sensorName = entry.getKey();
+			stringBuilder.append("[[" + sensorType + ":" + sensorName + "]]\n");
 			String[] parameters = entry.getValue().split(betweenParametersSeparator);
 			for (int i = 0; i < parameters.length; i++) {
 				stringBuilder.append("  " + parameters[i] + "\n");
@@ -84,7 +87,7 @@ public class TelegrafSensor extends AbstractSensor implements Runnable{
 
 
 	@Override
-	protected Set<Measurement> measureSet() throws MeasurementNotAvailableException {
+	protected Set<Measurement> measureSet() {
 		Set<Measurement> set = new HashSet<>();
 		//TODO
 		return set;
@@ -92,6 +95,10 @@ public class TelegrafSensor extends AbstractSensor implements Runnable{
 
 	public void setSensorMetrics(String metrics) {
 		this.sensorMetrics = metrics;
+	}
+
+	public String getSensorName() {
+		return sensorName;
 	}
 
 
