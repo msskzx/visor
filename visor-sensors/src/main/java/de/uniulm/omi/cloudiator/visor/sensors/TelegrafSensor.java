@@ -1,7 +1,9 @@
 package de.uniulm.omi.cloudiator.visor.sensors;
 
+import de.uniulm.omi.cloudiator.visor.exceptions.MeasurementNotAvailableException;
 import de.uniulm.omi.cloudiator.visor.exceptions.SensorInitializationException;
 import de.uniulm.omi.cloudiator.visor.monitoring.AbstractSensor;
+import de.uniulm.omi.cloudiator.visor.monitoring.Measurement;
 import de.uniulm.omi.cloudiator.visor.monitoring.MonitorContext;
 import de.uniulm.omi.cloudiator.visor.monitoring.SensorConfiguration;
 
@@ -10,11 +12,13 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 
-public class TelegrafSensors extends AbstractSensor implements Runnable{
+public class TelegrafSensor extends AbstractSensor implements Runnable{
 
 	String betweenParametersSeparator = ",";
 	String fileName = "./Telegraf/telegraf.conf";
@@ -24,8 +28,9 @@ public class TelegrafSensors extends AbstractSensor implements Runnable{
 
 	String sensorType;
 	Map<String, String> sensorConfiguration;
+	String sensorMetrics;
 
-	public TelegrafSensors(String sensorType, SensorConfiguration sensorConfiguration) {
+	public TelegrafSensor(String sensorType, SensorConfiguration sensorConfiguration) {
 		this.sensorType = sensorType;
 		this.sensorConfiguration = sensorConfiguration.getConfiguration();
 		// run();
@@ -76,6 +81,19 @@ public class TelegrafSensors extends AbstractSensor implements Runnable{
 
 		bufferedWriter.close();
 	}
+
+
+	@Override
+	protected Set<Measurement> measureSet() throws MeasurementNotAvailableException {
+		Set<Measurement> set = new HashSet<>();
+		//TODO
+		return set;
+	}
+
+	public void setSensorMetrics(String metrics) {
+		this.sensorMetrics = metrics;
+	}
+
 
 	/**
 	 * called to add a plugin to the config file

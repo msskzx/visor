@@ -13,7 +13,7 @@ public class TelegrafSensorsInit {
 
     static String betweenParametersSeparator = ",";
     static String fileName = "Telegraf/telegraf.conf";
-    static Map<String, String> runningSensors;
+    static Map<String, TelegrafSensor> runningSensors;
     static int PORT = 9000;
     static String route = "/monitors";
     static String url = "http://localhost:" + PORT + route;
@@ -117,11 +117,8 @@ public class TelegrafSensorsInit {
      * @param sensor
      * @return boolean
      */
-    boolean alreadyRunningSensor(String sensor) {
-        if (runningSensors.containsKey(sensor))
-            return true;
-        runningSensors.put(sensor, "");
-        return false;
+    static boolean alreadyRunningSensor(String sensor) {
+        return runningSensors.containsKey(sensor);
     }
 
 
@@ -145,7 +142,11 @@ public class TelegrafSensorsInit {
 
             // to get the metric name from the request
             String sensorName = metrics.toString().split(",")[1].split(":")[1];
-            runningSensors.put(sensorName, metrics.toString());
+            if (alreadyRunningSensor(sensorName)) {
+                TelegrafSensor sensor = runningSensors.get(sensorName);
+                sensor.setSensorMetrics(metrics.toString());
+                runningSensors.put(sensorName, sensor);
+            }
 
             httpExchange.getRequestBody().close();
         }
